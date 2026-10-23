@@ -1,7 +1,9 @@
 name: Deploy Surgical Follow-up to Cloudflare
 
-# Run manually while the bot is being connected and tested.
+# Deploy from main on changes, or on demand.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
