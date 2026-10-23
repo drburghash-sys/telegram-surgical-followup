@@ -33,12 +33,11 @@
 3. أنشئ قاعدة البيانات: `npx wrangler d1 create surgical_followup`.
 4. انسخ المعرّف الذي سيظهر إلى `database_id` في `wrangler.jsonc` بدل `REPLACE_WITH_YOUR_D1_DATABASE_ID`.
 5. أنشئ الجداول: `npm run db:remote`.
-6. أضف أسرار التشغيل (سيطلب كل أمر قيمته دون إظهارها في الكود):
+6. أضف أسرار التشغيل الثلاثة (سيطلب كل أمر قيمته دون إظهارها في الكود). اسم البوت `burghashbot` مُدرج مسبقًا في إعدادات المشروع:
    ```sh
    npx wrangler secret put TELEGRAM_BOT_TOKEN
    npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
    npx wrangler secret put ADMIN_TELEGRAM_ID
-   npx wrangler secret put BOT_USERNAME
    ```
    أنشئ secret عشوائيًا جديدًا لـ `TELEGRAM_WEBHOOK_SECRET` يضم الحروف والأرقام و`_` و`-`، ولا تشاركه.
 7. انشر: `npm run deploy`، ثم انسخ رابط `https://...workers.dev`.
