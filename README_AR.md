@@ -24,7 +24,7 @@
 2. احتفظ برمز البوت (`TELEGRAM_BOT_TOKEN`) **خارج GitHub**.
 3. أرسل `/start` إلى البوت من حساب المدير.
 4. لمعرفة رقم حساب المدير عبر واجهة Bot API، من حاسوب عليه Node 22 شغّل `TELEGRAM_BOT_TOKEN=... node scripts/get-my-id.mjs` قبل تفعيل webhook. أو أرسل `/id` للبوت بعد نشر الكود ومعاودة تشغيله.
-5. انسخ اسم البوت دون `@` إلى `BOT_USERNAME`.
+5. اسم البوت المعتمد لهذا المشروع هو **@burghashbot**، وهو مثبت في `wrangler.jsonc` كمتغير عام `BOT_USERNAME`، فلا حاجة لإضافته ضمن الأسرار.
 
 ### ٢. Cloudflare D1 وWorkers
 
