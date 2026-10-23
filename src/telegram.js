@@ -8,7 +8,9 @@ export async function verifyInitData(data, token, adminId, nowMs=Date.now()) {
   if(!data || !token || !adminId) return false;
   const params=new URLSearchParams(data), hash=params.get('hash'); if(!hash||!/^[0-9a-f]{64}$/.test(hash)) return false;
   const authTime=Number(params.get('auth_date')); if(!Number.isFinite(authTime) || Math.abs(nowMs/1000-authTime)>3600) return false;
-  params.delete('hash'); params.delete('signature');
+  // For bot-token HMAC validation Telegram signs every field except `hash`.
+  // `signature` must remain: it is excluded only by the separate Ed25519 third-party flow.
+  params.delete('hash');
   const check=[...params.entries()].sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0).map(([k,v])=>k+'='+v).join('\n');
   const secret=await hmac('WebAppData',token);
   const actual=hex(await hmac(secret,check)); if(!eq(actual,hash)) return false;
