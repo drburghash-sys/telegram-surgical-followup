@@ -51,8 +51,40 @@ jobs:
       - name: Deploy Cloudflare Worker and Mini App
         run: npx wrangler deploy
 
+      - name: Activate @burghashbot after administrator secrets are saved
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ADMIN_TELEGRAM_ID: ${{ secrets.ADMIN_TELEGRAM_ID }}
+          WORKER_URL: "https://surgical-followup-demo.drburghash.workers.dev"
+        shell: bash
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$ADMIN_TELEGRAM_ID" ]; then
+            echo "Deployment complete; bot activation is pending."
+            echo "Add TELEGRAM_BOT_TOKEN and ADMIN_TELEGRAM_ID under Settings > Secrets and variables > Actions."
+            exit 0
+          fi
+          if ! [[ "$ADMIN_TELEGRAM_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::ADMIN_TELEGRAM_ID must be a numeric Telegram user ID."
+            exit 1
+          fi
+          node --input-type=module -e '
+            const res=await fetch("https://api.telegram.org/bot"+process.env.TELEGRAM_BOT_TOKEN+"/getMe");
+            const data=await res.json();
+            if (!data.ok || data.result?.username?.toLowerCase()!=="burghashbot") {
+              console.error("::error::The Telegram token does not belong to @burghashbot.");
+              process.exit(1);
+            }
+            console.log("Verified bot username: @burghashbot");
+          '
+          printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler secret put TELEGRAM_BOT_TOKEN
+          printf '%s' "$ADMIN_TELEGRAM_ID" | npx wrangler secret put ADMIN_TELEGRAM_ID
+          TELEGRAM_WEBHOOK_SECRET="$(node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('base64url'))")"
+          printf '%s' "$TELEGRAM_WEBHOOK_SECRET" | npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
+          export TELEGRAM_WEBHOOK_SECRET
+          npm run setup:telegram
+          echo "Bot webhook and administrator menu configured successfully."
+
       - name: Next steps
         run: |
-          echo "Worker deployed. Next configure Worker secrets in Cloudflare:"
-          echo "TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, ADMIN_TELEGRAM_ID"
-          echo "Then register Telegram webhook and menu button using scripts/setup-bot.mjs."
+          echo "Cloudflare Worker deployed and D1 migrated."
+          echo "Telegram activation automatically occurs once both bot secrets are present."
