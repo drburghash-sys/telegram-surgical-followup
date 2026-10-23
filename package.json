@@ -1,0 +1,8 @@
+{
+  "name":"telegram-surgical-followup",
+  "version":"0.1.0",
+  "private":true,
+  "type":"module",
+  "scripts":{"dev":"wrangler dev","deploy":"wrangler deploy","db:local":"wrangler d1 migrations apply surgical_followup --local","db:remote":"wrangler d1 migrations apply surgical_followup --remote","test":"node --test tests/*.test.mjs","setup:telegram":"node scripts/setup-bot.mjs"},
+  "devDependencies":{"wrangler":"^4.0.0"}
+}

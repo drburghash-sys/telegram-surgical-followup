@@ -1,0 +1,15 @@
+name: Code checks
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: node --check src/worker.js && node --check public/app.js
+      - run: python3 scripts/validate_sql.py
