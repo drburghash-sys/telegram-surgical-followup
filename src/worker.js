@@ -1,5 +1,5 @@
 import {reminderOffsets, dueAt, DAY} from './rules.js';
-import {verifyInitData,sha256hex,tg,buttons,ackButton,taskText,appointmentText} from './telegram.js';
+import {verifyInitData,sha256hex,tg,buttons,ackButton,taskText,appointmentText,patientReplyReceipt} from './telegram.js';
 const now=()=>Date.now(),uid=()=>crypto.randomUUID(),j=x=>JSON.stringify(x), parse=s=>{try{return JSON.parse(s||'{}');}catch{return {};}};
 const rows=async(q)=> (await q.all()).results||[];
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -302,20 +302,22 @@ async function handleCallback(env,callback){
   if(type==='t'&&!['y','n'].includes(value))throw new Error('رد غير معروف');
   if(type==='a'&&!['y','n'].includes(value))throw new Error('رد غير معروف');
   const answer=value==='y'?'yes':'no';
+  let receipt='';
   if(type==='t'){
-   if(entity.answer!==answer){await env.DB.prepare("UPDATE tasks SET answer=?,reviewed=CASE WHEN reviewed='approved' THEN 'pending' ELSE reviewed END,updated_at=? WHERE id=?").bind(answer,now(),id).run();
+   if(entity.answer!==answer){receipt=patientReplyReceipt('t',entity,answer,p.lang);await env.DB.prepare("UPDATE tasks SET answer=?,reviewed=CASE WHEN reviewed='approved' THEN 'pending' ELSE reviewed END,updated_at=? WHERE id=?").bind(answer,now(),id).run();
     await audit(env,p.id,'patient','task_answer',{title:entity.title,from:entity.answer,to:answer});
     await adminNotify(env,`📝 ${p.name} (${p.code}) — ${entity.title}: ${entity.answer||'لم يرد'} ← ${answer==='yes'?'نعم':'لا'}`);
     if(answer==='yes'){const inc=await env.DB.prepare("SELECT COUNT(*) n FROM tasks WHERE patient_id=? AND status='sent' AND answer!='yes'").bind(p.id).first();if(inc?.n===0)await adminNotify(env,`✅ ${p.name} (${p.code}) أفاد بإنجاز جميع المتطلبات؛ جاهزة لمراجعتك.`);}
    }
   }else if(type==='a'){
-   if(entity.answer!==answer){await env.DB.prepare('UPDATE appointments SET answer=?,updated_at=? WHERE id=?').bind(answer,now(),id).run();await audit(env,p.id,'patient','appointment_answer',{kind:entity.kind,from:entity.answer,to:answer,version:entity.version});
+   if(entity.answer!==answer){receipt=patientReplyReceipt('a',entity,answer,p.lang);await env.DB.prepare('UPDATE appointments SET answer=?,updated_at=? WHERE id=?').bind(answer,now(),id).run();await audit(env,p.id,'patient','appointment_answer',{kind:entity.kind,from:entity.answer,to:answer,version:entity.version});
     await adminNotify(env,`📅 ${p.name} (${p.code}) ${entity.kind==='surgery'?'العملية':'التوقيع'}: ${entity.answer||'لم يرد'} ← ${answer==='yes'?'نعم':'لا'}`);}
   }else if(type==='m'){
    if(!entity.ack_required)throw new Error('لا يتطلب هذا إشعارًا بالاطلاع');
-   if(!entity.ack_at){await env.DB.prepare('UPDATE messages SET ack_at=?,updated_at=? WHERE id=?').bind(now(),now(),id).run();await audit(env,p.id,'patient','acknowledged',{message_id:id});await adminNotify(env,`📨 ${p.name} (${p.code}) أقر بالاطلاع على الرسالة.`);}
+   if(!entity.ack_at){receipt=patientReplyReceipt('m',entity,answer,p.lang);await env.DB.prepare('UPDATE messages SET ack_at=?,updated_at=? WHERE id=?').bind(now(),now(),id).run();await audit(env,p.id,'patient','acknowledged',{message_id:id});await adminNotify(env,`📨 ${p.name} (${p.code}) أقر بالاطلاع على الرسالة.`);}
   }
   await tg(env,'answerCallbackQuery',{callback_query_id:callback.id,text:type==='m'?'تم تسجيل اطلاعك':'تم تسجيل إجابتك',show_alert:false});
+  if(receipt)await tg(env,'sendMessage',{chat_id:from,text:receipt}).catch(()=>{});
  }catch(e){await tg(env,'answerCallbackQuery',{callback_query_id:callback.id,text:safeText(e.message,180),show_alert:true}).catch(()=>{});}
 }
 async function handleBotMessage(env,message){
