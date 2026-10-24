@@ -81,4 +81,8 @@ document.addEventListener('click',async e=>{
 document.addEventListener('input',e=>{if(e.target.id==='search'){st.search=e.target.value;const list=st.patients.filter(p=>p.state===(st.view==='archive'?'archived':'active'));const html=sortedPatients(list).map(patientCard).join('')||'<div class="empty">لا توجد نتائج</div>';document.getElementById('patient-list').innerHTML=html;}});
 document.addEventListener('change',e=>{if(e.target.id==='sort'){st.sort=e.target.value;render();}if(e.target.name==='template'){const t=st.templates.find(t=>t.id===e.target.value),txt=e.target.closest('form')?.querySelector('[name=text]');if(t&&txt)txt.value=t[st.patientData?.patient?.lang||'ar']||'';}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!demo)refresh();});
-refresh();
+if(demo){
+ app.innerHTML=`<main class="shell" style="max-width:580px;padding-top:40px;text-align:center"><div class="card"><h2>متابعة العمليات</h2><p>هذه لوحة خاصة بالمسؤول ولا توجد واجهة تطبيق للمرضى.</p><p>يتلقى المريض المتطلبات والمواعيد كرسائل عادية داخل محادثة تيليجرام، ويجيب باستخدام أزرار نعم أو لا أسفل كل رسالة.</p><p class="footnote">افتح بوت تيليجرام للتفعيل واستقبال الرسائل. لا تحتاج إلى موقع أو تطبيق إضافي.</p><p><a href="https://t.me/burghashbot">فتح بوت @burghashbot</a></p></div></main>`;
+}else{
+ refresh();
+}
