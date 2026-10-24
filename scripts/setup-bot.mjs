@@ -10,7 +10,7 @@ await telegram('setChatMenuButton',{menu_button:{type:'commands'}});
 await telegram('setChatMenuButton',{chat_id:admin,menu_button:{type:'web_app',text:'لوحة إدارة العمليات',web_app:{url:worker}}});
 const patientMenu=await telegram('getChatMenuButton',{});
 const adminMenu=await telegram('getChatMenuButton',{chat_id:admin});
-console.log('Telegram menus:',JSON.stringify({patient:patientMenu.type,administrator:adminMenu.type,correctAppUrl:String(adminMenu.web_app?.url||'').replace(/\\/+$/,'')===worker.replace(/\\/+$/,'')}));
+console.log('Telegram menu modes:',JSON.stringify({patient:patientMenu.type,administrator:adminMenu.type}));
 if(patientMenu.type!=='commands'||adminMenu.type!=='web_app'){throw new Error('فشل تأكيد فصل قائمة المريض عن قائمة المدير');}
 await telegram('setMyCommands',{commands:[{command:'start',description:'بدء المحادثة وتفعيل الحساب'},{command:'change',description:'طلب تغيير الحساب'},{command:'recover',description:'طلب استعادة الحساب'}]});
 console.log('✅ Patients: chat and commands only. Administrator: private Mini App. Webhook registered.');
