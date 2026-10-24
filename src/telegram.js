@@ -21,6 +21,18 @@ export function buttons(type,id,version=0,labels=['نعم','لا']){
   return {inline_keyboard:[[{text:labels[0],callback_data:`${type}:${id}:y${suffix}`},{text:labels[1],callback_data:`${type}:${id}:n${suffix}`}]]};
 }
 export function ackButton(id,label='اطلعت على الرسالة'){return {inline_keyboard:[[{text:label,callback_data:`m:${id}:k`}]]};}
+// Plain chat confirmations keep the patient's experience in Telegram messages, not a web UI.
+export function patientReplyReceipt(type,entity,answer,lang='ar'){
+ if(type==='m')return lang==='en'?'We recorded that you have read the message.':'تم تسجيل اطلاعك على الرسالة.';
+ const choice=answer==='yes'?(lang==='en'?'Yes':'نعم'):(lang==='en'?'No':'لا');
+ if(type==='t')return lang==='en'
+   ?`Your response was recorded: ${choice}.\\nRequirement: ${entity.title}`
+   :`تم تسجيل ردك: ${choice}.\\nالمتطلب: ${entity.title}`;
+ if(type==='a')return lang==='en'
+   ?`Your appointment response was recorded: ${choice}.`
+   :`تم تسجيل ردك على الموعد: ${choice}.`;
+ return '';
+}
 export function taskText(t,lang='ar') {return lang==='en'?`Requirement: ${t.title}${t.note?'\n'+t.note:''}\nHave you completed it?`:`المتطلب: ${t.title}${t.note?'\n'+t.note:''}\nهل أنجزت هذا المتطلب؟`;}
 export function appointmentText(a,lang='ar') {
  const type=a.kind==='surgery'?(lang==='en'?'operation':'العملية'):(lang==='en'?'signing appointment':'الحضور للتوقيع');
