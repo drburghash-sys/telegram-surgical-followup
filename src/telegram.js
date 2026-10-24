@@ -26,8 +26,8 @@ export function patientReplyReceipt(type,entity,answer,lang='ar'){
  if(type==='m')return lang==='en'?'We recorded that you have read the message.':'تم تسجيل اطلاعك على الرسالة.';
  const choice=answer==='yes'?(lang==='en'?'Yes':'نعم'):(lang==='en'?'No':'لا');
  if(type==='t')return lang==='en'
-   ?`Your response was recorded: ${choice}.\\nRequirement: ${entity.title}`
-   :`تم تسجيل ردك: ${choice}.\\nالمتطلب: ${entity.title}`;
+   ?`Your response was recorded: ${choice}.\nRequirement: ${entity.title}`
+   :`تم تسجيل ردك: ${choice}.\nالمتطلب: ${entity.title}`;
  if(type==='a')return lang==='en'
    ?`Your appointment response was recorded: ${choice}.`
    :`تم تسجيل ردك على الموعد: ${choice}.`;
